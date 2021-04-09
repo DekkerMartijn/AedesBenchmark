@@ -213,23 +213,23 @@ ggplot(Long, aes(x = jitter(Score), y = Deelmeting, fill = Y)) + geom_boxplot(al
 #Merge
 Df <- merge(Df_Huurderoordeel, Df_algemene_kenmerken[,-1], by="L.Nummer")
 Df <- merge(Df, Df_Bedrijfslasten[,-c(2,3,4)], by="Rec_ID") #merge without existing columns
-Df <- merge(Df, Df_Onderhoud[c(2,3,4)], by="Rec_ID") #duurzaamheid, beschikbaarheid en betaalbaarheid ontbreken nog 
+Df <- merge(Df, Df_Onderhoud[,-c(2,3,4)], by="Rec_ID") #duurzaamheid, beschikbaarheid en betaalbaarheid ontbreken nog 
+
 
 #----------
 #Prepare Df
 #----------
 
 #Check Duplicates
-table(duplicated(Df)) #zero duplicates
+table(duplicated(Df)) #merge created duplicates.
+Df <- unique(Df) #Keep unique
 
-# Remove Huurdersooordeel Predictor Variables
-names(Df)[c(6,12,18,11,22,40)]
-Df <- Df[,-c(6,12,18,11,22,40)]
-
-
+#---------------
 #Analyse Missing
-Miss <- Df
-names(Miss) <- c(1:length(names(Miss))) #give numers als colum names for plot readability
+#---------------
+
+Miss <- Df[,-c(27,34:39,113:116)] # >0.5 missing
+names(Miss) <- c(1:length(names(Miss))) #give numbers as column names for plot readability
 names(Miss)
 
 Missing_plot <- aggr(Miss, col=c('navyblue','yellow'),
@@ -237,6 +237,8 @@ Missing_plot <- aggr(Miss, col=c('navyblue','yellow'),
                     labels=names(Miss), cex.axis=.5,
                     gap=3, ylab=c("Missing data","Pattern"))
 Missing_plot #What to do?
+
+Df <- Df[,-c(27,34:39,113:116)] # Keep <0.5 missing
 
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
@@ -251,20 +253,21 @@ row.names(Model_Df2) <- Model_Df2$Corporatie #Corporatienaam Rownames
 Model_Df2 <- Model_Df2[,-c(1:4)]
 
 #Deal with missing
-Miss <- Model_Df2[,-18]
-names(Miss) <- c(1:length(names(Miss))) #give numers als colum names for plot readability
-names(Miss)
+Miss <- Model_Df2[] 
+names(Miss) <- c(1:length(names(Miss))) #give numbers as column names for plot readability
+
 
 Missing_plot <- aggr(Miss, col=c('navyblue','yellow'),
                      numbers=TRUE, sortVars=TRUE,
                      labels=names(Miss), cex.axis=.5,
                      gap=3, ylab=c("Missing data","Pattern"))
 Missing_plot #What to do?
-names(Model_Df2)[18] # 100% missing
-names(Model_Df2)[c(27,24,28,29,25,26)] #> 50% missing
+Missing_plot
 
-Model_Df2 <- Model_Df2[,-18] #Do more? ##########################################
-Model_Df3 <- na.exclude(Model_Df2) # Te kort door de bocht
+names(Model_Df2)[c(9,15,21,22,23,24,25)] #> 50% missing
+
+Model_Df2 <- Model_Df2[,-c(9,15,21,22,23,24,25)] #Do more? ##########################################
+Model_Df3 <- na.exclude(Model_Df2) # Te kort door de bocht ##########################################
 
 #Impute missing 
 #imp <- mice(Model_Df, m=1, maxit = 50, method = 'pmm', seed = 500)
@@ -273,42 +276,31 @@ Model_Df3 <- na.exclude(Model_Df2) # Te kort door de bocht
 #Model_Df <- complete(imp)
 #Model_Df[-c(which(complete.cases(Model_Df$X_VH))),]
 
-#-----------
+#----------
 # Fit model
 #----------
 
-#Fit Random Forest
+# Remove Huurdersooordeel Predictor Variables
+names(Model_Df3[c(2:22,72,73)])
+Model_Df4 <- Model_Df3[,-c(2:22,72,73)] 
 
+#Fit Random Forest
+set.seed(10012)
 rf2 <- randomForest(
-  Y ~ .,
-  data=Model_Df3, importance=TRUE
-)
-rf2
-
-View(rf2$confusion)
-varImpPlot(rf2, type=1)
-varImpPlot(rf2, type=2)
-
-Model_Df4 <- Model_Df3[,-c(2:29)]  #Afgeleide huurdersoordeel predictors. Verwijderen
-
-#Fit Random Forest
-
-rf3 <- randomForest(
   Y ~ .,
   data=Model_Df4, importance=TRUE
 )
-rf3
-
-View(rf$confusion)
-varImpPlot(rf3, type=1)
+rf2
+View(rf2$confusion)
+varImpPlot(rf2, type=1) # Roughly 60%
 
 # Check misclassified
-indices <- vector(mode = "logical", length = length(Model_Df3$Y))
-for (i in 1:length(Model_Df3$Y)) { if (Model_Df3$Y[i] == rf3$predicted[i]) { indices[i] <- TRUE } 
+indices <- vector(mode = "logical", length = length(Model_Df4$Y))
+for (i in 1:length(Model_Df4$Y)) { if (Model_Df4$Y[i] == rf2$predicted[i]) { indices[i] <- TRUE } 
   else indices[i] <- FALSE
 }
-Check_False <- Model_Df3[which(!indices),]
-Check_False$Predicted <- rf3$predicted[which(!indices)] 
+Check_False <- Model_Df4[which(!indices),]
+Check_False$Predicted <- rf2$predicted[which(!indices)] 
 View(Check_False[,c("Y","Predicted")]) # Welke?
 
 
@@ -316,9 +308,11 @@ View(Check_False[,c("Y","Predicted")]) # Welke?
 # Cluster Analyse ( k nearest n)
 #--------------------------------
 
+
 # Let op Factors als dummy
 # Let op Schalen van Data!
 # K nearest neighbours
+
 
 
 
