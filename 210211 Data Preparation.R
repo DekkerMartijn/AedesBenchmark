@@ -1,4 +1,5 @@
 #------------------------------------------------------------------------------------------------------------
+# V1.0
 # Inspect Data
 # M.Dekker
 # Aedes Benchmark
@@ -312,7 +313,6 @@ View(Check_False[,c("Y","Predicted")]) # Welke?
 # Let op Factors als dummy
 # Let op Schalen van Data!
 # K nearest neighbours
-
 
 
 
