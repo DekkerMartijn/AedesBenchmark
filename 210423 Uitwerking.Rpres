@@ -1,0 +1,99 @@
+Exploratie Aedes Benchmark Data
+========================================================
+author: Martijn Dekker  
+date: 23 april 2021
+autosize: true
+
+Aedes Benchmark
+========================================================
+
+```{r, echo=FALSE}
+#-----
+# Load 
+#-----
+
+library(ggforce)
+library(ggplot2)
+library(tidyr)
+library(tibble)
+library(dplyr)
+library(forcats)
+
+#-----
+# Load 
+#-----
+
+setwd("~/Trivire/R/Git/AedesBencmark/AedesBenchmark/Data")
+
+df <- read.csv("Letter_per_jaar_per_corpo.csv", sep=";",header = T,stringsAsFactors = F, na.strings = "")
+df <- df[,-c(13,17)] # 2020 onderhoud en bedrijfslasten lopen tot laatste boekjaar
+df[is.na(df)] <- "geen score"
+df <- df[,order(names(df))]
+names(df) <- c("Corporatie",
+  "J2017_bedrijfslasten",
+"J2017_duurzaamheid",
+"J2017_huurdersoordeel",
+"J2017_onderhoud",
+"J2018_bedrijfslasten", 
+"J2018_duurzaamheid",
+"J2018_huurdersoordeel",
+"J2018_onderhoud",
+"J2019_bedrijfslasten",
+"J2019_duurzaamheid",
+"J2019_huurdersoordeel",
+"J2019_onderhoud",
+"J2020_duurzaamheid",
+"J2020_huurdersoordeel")
+
+df <- df[,-1] #Drop Corporatie namen
+```
+
+Jaarlijks vergelijking van de maatschappelijke prestaties van woningcorporaties over 5 prestatievelden.
+
+- Huurderoordeel
+- Onderhoud en Verbetering
+- Duurzaamheid
+- Beschikbaarheid en Betaalbaarheid
+- Beinvloedbare bedrijfslasten
+
+```{r, echo=FALSE}
+#--------------
+#Bedrijfslasten
+#--------------
+
+#requires data.frame containing the frequency of some sequence
+Grouped_BL <- df %>% group_by(J2017_bedrijfslasten,J2018_bedrijfslasten,J2019_bedrijfslasten) %>% 
+summarise(freq = n()) # %>% filter(freq > 10) # Tune for size of grouped to plot
+
+# Long format:
+Parallel_Set_Plot_BL <- gather_set_data(Grouped_BL, 1:length(Grouped_BL)-1) #Drop Freq
+```
+
+Systematiek (1)
+========================================================
+
+Grote hoeveelheid data per prestatieveld.
+
+- Conceptueel model per prestatieveld
+- Weging op deelscores
+- Vertaling naar eindscore in de vorm van Letter
+
+Systematiek (2)
+========================================================
+
+Bedrijfslasten
+
+```{r, echo=FALSE}
+#Plot
+ggplot(Parallel_Set_Plot_BL, aes(x, id = id, split = y, value = freq)) +
+  geom_parallel_sets(aes(fill = J2019_bedrijfslasten), alpha = 0.3, axis.width = 0.2)+
+  geom_parallel_sets_axes(axis.width = 0.2) +
+  geom_parallel_sets_labels(colour = 'black',angle = 360,size = 3) + labs(fill = "Score") + xlab(" ") + ylab("Aantal Corporaties") +
+  theme_bw()
+```
+
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```

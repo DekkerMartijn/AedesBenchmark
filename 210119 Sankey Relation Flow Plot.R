@@ -137,14 +137,14 @@ J_Total <- cbind(J2017,J2018,J2019,J2020)
   summarise(freq = n()) # %>% filter(freq > 10) # Tune for size of grouped to plot
 
 # Long format:
-Parallel_Set_Plot_J <- gather_set_data(Grouped_J, 1:length(Grouped)-1) #Drop Freq
+Parallel_Set_Plot_J <- gather_set_data(Grouped_J, 1:length(Grouped_J)-1) #Drop Freq
 
 
 #Plot
 ggplot(Parallel_Set_Plot_J, aes(x, id = id, split = y, value = freq)) +
   geom_parallel_sets(aes(fill = J2017), alpha = 0.3, axis.width = 0.2)+
   geom_parallel_sets_axes(axis.width = 0.2) +
-  geom_parallel_sets_labels(colour = 'black',angle = 360,size = 3) + labs(fill = "Score") + xlab(" ") + ylab("Aantal Corporaties") +
+  geom_parallel_sets_labels(colour = 'black',angle = 360,size = 3) + labs(fill = "Score") + xlab(" ") + ylab("Aantal Corporaties")
   theme_bw()
 
 
