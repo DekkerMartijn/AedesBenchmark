@@ -100,7 +100,6 @@ Model_Df[-c(which(complete.cases(Model_Df$X_VH))),]
 # Scatterplot Correlation Matrix
 scatterplotMatrix(Model_Df[,c(2:4)]) # Slightly positively correlated
 cor(Model_Df[,c(2:4)])
-?scatterplotMatrix
 
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
@@ -167,7 +166,7 @@ ggplot(Model_Df, aes(x=X_R, fill = Y)) +
 
 # Boxplot
 Long <- gather(Model_Df,Deelmeting,Score,X_NH:X_VH, factor_key=TRUE)
-ggplot(Long, aes(x = jitter(Score), y = Deelmeting, fill = Y)) + geom_boxplot(alpha=.2) + theme_bw()
+ggplot(Long, aes(x = jitter(Score), y = Deelmeting, fill = Y)) + geom_boxplot(alpha=.2) + labs(x = "Rapportcijfer") + theme_bw() + theme(legend.position = "none")
 
 
 #-----------------------------------------------------------
@@ -294,14 +293,16 @@ names(Model_Df3[c(2:22,72,73)])
 Model_Df4 <- Model_Df3[,-c(2:22,72,73)] 
 
 #Fit Random Forest
-set.seed(10012)
+set.seed(0)
 rf2 <- randomForest(
   Y ~ .,
   data=Model_Df4, importance=TRUE
 )
 rf2
 View(rf2$confusion)
-varImpPlot(rf2, type=1) # Roughly 60%
+varImpPlot(rf2, n.var = 10, type=1) # Roughly 60%
+?varImpPlot
+
 
 # Check misclassified
 indices <- vector(mode = "logical", length = length(Model_Df4$Y))
