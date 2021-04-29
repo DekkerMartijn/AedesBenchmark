@@ -304,6 +304,26 @@ Check_False <- Model_Df4[which(!indices),]
 Check_False$Predicted <- rf2$predicted[which(!indices)] 
 View(Check_False[,c("Y","Predicted")]) # Welke?
 
+#---------------------------------
+# Principal Component Analysis
+#--------------------------------
+
+# Df 108 variabelen
+# Exploratie onderliggende principale componenenten (directions where there is the most variance)
+
+# Prepare 
+Df2019 <- Df %>% dplyr::filter(Jaar == "2019") #work with 2019 data
+Df2019 <- Df2019[complete.cases(Df2019),] # only complete cases
+nums <- unlist(lapply(Df2019, is.numeric))  
+Df2019 <- Df2019[ ,nums] #Only numeric vars. 90 variables remaining
+Df2019 <- Df2019[,-c(1,27)]
+
+# PCA
+df.pca <- prcomp(Df2019, center = TRUE,scale. = TRUE) #scale en center
+
+
+
+
 
 #---------------------------------
 # Cluster Analyse ( k nearest n)
