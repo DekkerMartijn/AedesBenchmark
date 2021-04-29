@@ -25,6 +25,14 @@ library(rpart)
 library(rpart.plot)
 library(xgboost)
 library(e1071)
+library(factoextra)
+
+library(rsample)
+library(ggrepel)
+library(ggpubr)
+library(class)
+library(caret)
+
 
 #-----
 # Load 
@@ -305,7 +313,7 @@ Check_False$Predicted <- rf2$predicted[which(!indices)]
 View(Check_False[,c("Y","Predicted")]) # Welke?
 
 #---------------------------------
-# Principal Component Analysis
+# Principal Component Analysis 
 #--------------------------------
 
 # Df 108 variabelen
@@ -313,26 +321,50 @@ View(Check_False[,c("Y","Predicted")]) # Welke?
 
 # Prepare 
 Df2019 <- Df %>% dplyr::filter(Jaar == "2019") #work with 2019 data
+row.names(Df2019) <- Df2019$Corporatie
 Df2019 <- Df2019[complete.cases(Df2019),] # only complete cases
 nums <- unlist(lapply(Df2019, is.numeric))  
 Df2019 <- Df2019[ ,nums] #Only numeric vars. 90 variables remaining
-Df2019 <- Df2019[,-c(1,27)]
+Df2019 <- Df2019[,-c(1,27,62,63,64,65,67)] # remove near zero variance vars
 
 # PCA
 df.pca <- prcomp(Df2019, center = TRUE,scale. = TRUE) #scale en center
+summary(df.pca)
+fviz_eig(df.pca) #Scree plot. Ca 3 PCA
+
+# Graph of individuals. Individuals with a similar profile are grouped together.
+fviz_pca_ind(df.pca,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
+
+#Graph of variables. Positive correlated variables point to the same side of the plot. Negative correlated variables point to opposite sides of the graph.
+fviz_pca_var(df.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
 
 
+#Biplot of individuals and variables
+fviz_pca_biplot(df.pca, repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969",  # Individuals color
+                label = c("ind","quanti.sup")
+)
 
 
-
-#---------------------------------
-# Cluster Analyse ( k nearest n)
-#--------------------------------
-
-
+#-----------------------------------------------
+# Cluster Analyse ( k nearest n) segment analyse
+# https://rpubs.com/ysittaa/cust_segmentation
+#-----------------------------------------------
 # Let op Factors als dummy
 # Let op Schalen van Data!
-# K nearest neighbours
+
+
+
+
 
 
 
