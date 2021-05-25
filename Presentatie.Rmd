@@ -10,7 +10,7 @@ logo: Logo2.png
 
 ## Aedes Benchmark {data-background=Background.png data-background-size=cover}
 
-Jaarlijkse vergelijking van de maatschappelijke prestaties van van ca 300 corporaties over 5 prestatievelden. Per prestatieveld o.b.v. een aantal bepalende variabelen een eindoordeel (A,B,C score). 
+Jaarlijkse vergelijking van de maatschappelijke prestaties van van ca 300 corporaties over verschillende prestatievelden. Per prestatieveld o.b.v. een aantal **bepalende variabelen** een eindoordeel (A,B,C score). Dataset bevat historie over ca 7 jaar/300+ variabelen*.  
 
 ![](Logo.png)
 
@@ -20,7 +20,7 @@ Jaarlijkse vergelijking van de maatschappelijke prestaties van van ca 300 corpor
 - Beinvloedbare bedrijfslasten
 - Onderhoud en Verbetering
 - Duurzaamheid
-- Beschikbaarheid en Betaalbaarheid*
+- Beschikbaarheid en Betaalbaarheid, Leefbaarheid, Niewbouw*
 
 
 ![](Logo.png)
@@ -90,7 +90,7 @@ ggplot(Parallel_Set_Plot_HO, aes(x, id = id, split = y, value = freq)) +
   theme_bw() + theme(legend.position = "none")
 ```
 
-## Huurdersoordeel {.build .smaller data-background=Background.png data-background-size=cover}
+## Exploratie Dataset{.build .smaller data-background=Background.png data-background-size=cover}
 ```{r setup2, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -181,7 +181,19 @@ knitr::opts_chunk$set(echo = FALSE)
 Df_Huurderoordeel_jaar <- Df_Huurderoordeel %>% filter(Jaar == 2019) #Change for different year
 ```
 
-```{r HO2, echo = TRUE}
+- Data Science technieken op de dataset toepassen (exploratief)
+- Vooraf **geen** duidelijke businescase en/of probleemstelling
+- Vooral toepassen en wellicht verrassen(?) 
+- Uitwerking met focus op prestatieveld **huurdersoordeel** 2019
+
+Git Repository: https://github.com/DekkerMartijn/AedesBenchmark
+
+```{r HO2.1, echo = TRUE}
+###<b>
+length(Df_Huurderoordeel_jaar$Corporatie) ###</b>
+```
+
+```{r HO2.2, echo = TRUE}
 ### <b>
 prop.table(table(Df_Huurderoordeel_jaar$Letter.huurdersoordeel..Letters..3.klasse..)) ### </b>
 ```
@@ -210,6 +222,8 @@ imp$imp$X_VH #Imputed values
 Model_Df <- complete(imp)
 Model_Df[-c(which(complete.cases(Model_Df$X_VH))),]
 ```
+
+## Huurdersoordeel {.build .smaller data-background=Background.png data-background-size=cover}
 
 ```{r HO5, echo = TRUE, out.width = '72%', fig.align='center'}
 ### <b>
@@ -287,7 +301,7 @@ ggplot(Long, aes(x = jitter(Score), y = Deelmeting, fill = Y)) + geom_boxplot(al
 ```
 
 
-## Fit with different vars {.build .smaller data-background=Background.png data-background-size=cover}
+## Fit met overige variabelen {.build .smaller data-background=Background.png data-background-size=cover}
 
 ```{r HO12, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -395,7 +409,8 @@ varImpPlot(rf2, n.var = 10, type=1) ### </b>
 
 ```
 
-## PCA {.build .smaller data-background=Background.png data-background-size=cover}
+## PCA {.smaller data-background=Background.png data-background-size=cover}
+
 
 ```{r HO15, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -412,13 +427,15 @@ Df2019 <- Df2019[ ,nums] #Only numeric vars. 90 variables remaining
 Df2019 <- Df2019[,-c(1,27,62,63,64,65,67)] # remove near zero variance vars
 
 ```
+ca 33% verklaarde variantie in 3 principale componenenten over 108 variabelen.
 
-```{r HO16, echo=TRUE, message=FALSE, warning=FALSE, out.width = '100%', fig.align='center'}
+```{r HO16, echo=TRUE, message=FALSE, warning=FALSE, out.width = '90%', fig.align='center'}
 ### <b> 
 df.pca <- prcomp(Df2019, center = TRUE,scale. = TRUE) #scale en center
 fviz_eig(df.pca) ### </b>
 
 ```
+
 
 ## PCA {.build .smaller data-background=Background.png data-background-size=cover}
 
@@ -456,5 +473,12 @@ fviz_pca_biplot(df.pca, repel = TRUE,
 
 ```
 
+## Cluster Analyse {.build .smaller data-background=Background.png data-background-size=cover}
 
+```{r HO20, echo=FALSE, message=FALSE, warning=FALSE, out.width = '100%', fig.align='center'}
+### <b> 
+
+### </b>
+
+```
 
