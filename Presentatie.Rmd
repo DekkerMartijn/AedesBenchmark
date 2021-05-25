@@ -81,15 +81,6 @@ Grouped_HO <- df %>% group_by(J2017_huurdersoordeel,J2018_huurdersoordeel,J2019_
 Parallel_Set_Plot_HO <- gather_set_data(Grouped_HO, 1:length(Grouped_HO)-1) #Drop Freq
 ```
  
-```{r Sankey , out.width = '105%', fig.align='center'}
-#Plot
-ggplot(Parallel_Set_Plot_HO, aes(x, id = id, split = y, value = freq)) +
-  geom_parallel_sets(aes(fill = J2020_huurdersoordeel), alpha = 0.3, axis.width = 0.2)+
-  geom_parallel_sets_axes(axis.width = 0.2) +
-  geom_parallel_sets_labels(colour = 'white',angle = 360,size = 3) + labs(fill = "Score") + xlab(" ") + ylab("Aantal Corporaties") +
-  theme_bw() + theme(legend.position = "none")
-```
-
 ## Exploratie Dataset{.build .smaller data-background=Background.png data-background-size=cover}
 ```{r setup2, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -104,8 +95,9 @@ knitr::opts_chunk$set(echo = FALSE)
 # https://glmnet.stanford.edu/articles/glmnet.html#multinomial-regression-family-multinomial-
 #------------------------------------------------------------------------------------------------------------
 
-library(ggforce)
+
 library(ggplot2)
+library(ggforce)
 library(tidyr)
 library(tibble)
 library(dplyr)
@@ -122,7 +114,7 @@ library(rpart.plot)
 library(xgboost)
 library(e1071)
 library(factoextra)
-
+library(plotly)
 library(rsample)
 library(ggrepel)
 library(ggpubr)
@@ -186,7 +178,7 @@ Df_Huurderoordeel_jaar <- Df_Huurderoordeel %>% filter(Jaar == 2019) #Change for
 - Vooral toepassen en wellicht verrassen(?) 
 - Uitwerking met focus op prestatieveld **huurdersoordeel** 2019
 
-Git Repository: https://github.com/DekkerMartijn/AedesBenchmark
+<font size="2"> Git Repository: https://github.com/DekkerMartijn/AedesBenchmark </font>
 
 ```{r HO2.1, echo = TRUE}
 ###<b>
@@ -197,6 +189,18 @@ length(Df_Huurderoordeel_jaar$Corporatie) ###</b>
 ### <b>
 prop.table(table(Df_Huurderoordeel_jaar$Letter.huurdersoordeel..Letters..3.klasse..)) ### </b>
 ```
+
+## Huurdersoordeel {.build .smaller data-background=Background.png data-background-size=cover}
+
+```{r Sankey , out.width = '105%', fig.align='center'}
+#Plot
+ggplot(Parallel_Set_Plot_HO, aes(x, id = id, split = y, value = freq)) +
+  geom_parallel_sets(aes(fill = J2020_huurdersoordeel), alpha = 0.3, axis.width = 0.2)+
+  geom_parallel_sets_axes(axis.width = 0.2) +
+  geom_parallel_sets_labels(colour = 'white',angle = 360,size = 3) + labs(fill = "Score") + xlab(" ") + ylab("Aantal Corporaties") +
+  theme_bw() + theme(legend.position = "none")
+```
+
 
 ```{r HO3, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -221,6 +225,8 @@ summary(imp)
 imp$imp$X_VH #Imputed values
 Model_Df <- complete(imp)
 Model_Df[-c(which(complete.cases(Model_Df$X_VH))),]
+
+Model_Df5 <- Model_Df[,2:4]
 ```
 
 ## Huurdersoordeel {.build .smaller data-background=Background.png data-background-size=cover}
@@ -229,6 +235,39 @@ Model_Df[-c(which(complete.cases(Model_Df$X_VH))),]
 ### <b>
 scatterplotMatrix(Model_Df[,c(2:4)]) ### </b>
 
+```
+
+## Huurdersoordeel {.build .smaller data-background=Background.png data-background-size=cover}
+
+```{r HO4.2, echo=TRUE, message=FALSE, warning=FALSE, out.width = '80%', fig.align='center'}
+### <b>
+plot_ly(Model_Df, x=~X_R, y=~X_NH, 
+             z=~X_VH, color=~Y) %>%
+  add_markers(size=1.5)### </b>
+```
+
+## Cluster Analyse {.build .smaller data-background=Background.png data-background-size=cover}
+
+```{r HO4.3, echo=TRUE, message=FALSE, warning=FALSE, out.width = '60%', fig.align='center'}
+### <b> 
+Model_Df5$cluster = factor(kmeans(Model_Df5,3)$cluster)
+levels(Model_Df5$cluster) <- c("A","B","C")### </b>
+```
+
+```{r HO4.4, echo=FALSE, message=FALSE, warning=FALSE, out.width = '60%', fig.align='center'}
+### <b>
+#Predicted
+plot_ly(Model_Df5, x=~X_R, y=~X_NH, 
+             z=~X_VH, color=~cluster) %>%
+  add_markers(size=1.5)### </b>
+```
+
+## Cluster Analyse {.build .smaller data-background=Background.png data-background-size=cover}
+
+```{r HO4.5, echo=FALSE, message=FALSE, warning=FALSE, out.width = '100%', fig.align='center'}
+### <b>
+CM <- cbind(Model_Df,Model_Df5$cluster)
+table(CM$Y,CM$`Model_Df5$cluster`, dnn = c("actual","fitted"))###</b>
 ```
 
 ## Huurdersoordeel Tree Model {.build .smaller data-background=Background.png data-background-size=cover}
@@ -274,32 +313,6 @@ Check_False <- Model_Df[which(!indices),]
 Check_False$Predicted <- rf$predicted[which(!indices)] ### </b>
 Check_False
 ```
-
-## Plot {.build .smaller data-background=Background.png data-background-size=cover}
-
-```{r HO10, echo=TRUE, message=FALSE, warning=FALSE, out.width = '75%', fig.align='center'}
-### <b>
-ggplot(Model_Df, aes(x=X_R, fill = Y)) + 
-  geom_histogram(aes(y=..density..), colour="black", fill="white") +
-  geom_density(alpha=.2) +
-  geom_vline(data=Model_Df, aes(xintercept=mean(Model_Df$X_R), color="red"), 
-             linetype="dashed") + 
-  labs(title = "Huurderoordeel") + 
-  theme_bw() + theme(legend.position = "none") ### </b>
-
-```
-
-
-## Plot {.build .smaller data-background=Background.png data-background-size=cover}
-
-```{r HO11, echo=TRUE, message=FALSE, warning=FALSE, out.width = '85%', fig.align='center'}
-### <b>
-Long <- gather(Model_Df,Deelmeting,Score,X_NH:X_VH, factor_key=TRUE)
-ggplot(Long, aes(x = jitter(Score), y = Deelmeting, fill = Y)) + geom_boxplot(alpha=.2) + 
-  labs(x = "Rapportcijfer") + theme_bw() + theme(legend.position = "none") ### </b>
-
-```
-
 
 ## Fit met overige variabelen {.build .smaller data-background=Background.png data-background-size=cover}
 
@@ -411,7 +424,6 @@ varImpPlot(rf2, n.var = 10, type=1) ### </b>
 
 ## PCA {.smaller data-background=Background.png data-background-size=cover}
 
-
 ```{r HO15, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -427,7 +439,7 @@ Df2019 <- Df2019[ ,nums] #Only numeric vars. 90 variables remaining
 Df2019 <- Df2019[,-c(1,27,62,63,64,65,67)] # remove near zero variance vars
 
 ```
-ca 33% verklaarde variantie in 3 principale componenenten over 108 variabelen.
+ca 33% verklaarde variantie in 3 principale componenenten over 108 variabelen*.
 
 ```{r HO16, echo=TRUE, message=FALSE, warning=FALSE, out.width = '90%', fig.align='center'}
 ### <b> 
@@ -473,12 +485,11 @@ fviz_pca_biplot(df.pca, repel = TRUE,
 
 ```
 
-## Cluster Analyse {.build .smaller data-background=Background.png data-background-size=cover}
+## Conclusies {.build .smaller data-background=Background.png data-background-size=cover}
 
-```{r HO20, echo=FALSE, message=FALSE, warning=FALSE, out.width = '100%', fig.align='center'}
-### <b> 
+- Exacte werking Beoordelingskader
+- Vervolg onderzoek inlvoed van overige kenmerken
+- Andere technieken?
+- Suggesties
 
-### </b>
-
-```
 
