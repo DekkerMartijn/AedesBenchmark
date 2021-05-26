@@ -364,11 +364,29 @@ fviz_pca_biplot(df.pca, repel = TRUE,
 # Let op Schalen van Data!
 
 
+#df = iris[,1:3]
+
+Model_Df5 <- Model_Df[,2:4]
+Model_Df5$cluster = factor(kmeans(Model_Df5,3)$cluster)
+levels(Model_Df5$cluster) <- c("A","B","C")
+
+library(plotly)
 
 
+#Predicted
+p <- plot_ly(Model_Df5, x=~X_R, y=~X_NH, 
+             z=~X_VH, color=~cluster) %>%
+  add_markers(size=1.5)
+print(p)
 
+#Actual
+p <- plot_ly(Model_Df, x=~X_R, y=~X_NH, 
+             z=~X_VH, color=~Y) %>%
+  add_markers(size=1.5)
+print(p)
 
-
+CM <- cbind(Model_Df,Model_Df5$cluster)
+table(CM$Y,CM$`Model_Df5$cluster`, dnn = c("actual","predicted"))
 
 
 

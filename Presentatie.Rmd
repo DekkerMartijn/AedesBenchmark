@@ -485,10 +485,10 @@ fviz_pca_biplot(df.pca, repel = TRUE,
 
 ```
 
-## Conclusies {.build .smaller data-background=Background.png data-background-size=cover}
+## Belangrijkste Bevindingen {.build .smaller data-background=Background.png data-background-size=cover}
 
-- Exacte werking Beoordelingskader
-- Vervolg onderzoek inlvoed van overige kenmerken
+- Beoordelingskader
+- Inlvoed van overige kenmerken
 - Andere technieken?
 - Suggesties
 
