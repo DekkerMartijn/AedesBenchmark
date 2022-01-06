@@ -5,7 +5,6 @@
 # Aedes Benchmark
 # 210211
 
-# https://glmnet.stanford.edu/articles/glmnet.html#multinomial-regression-family-multinomial-
 #------------------------------------------------------------------------------------------------------------
 
 library(ggforce)
